@@ -5170,16 +5170,136 @@ var $author$project$Main$update = F2(
 	function (msg, model) {
 		return model;
 	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$inputBox = function (num) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('input-box')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$elm$core$String$fromFloat(num))
+			]));
+};
+var $author$project$Main$Double = {$: 'Double'};
+var $author$project$Main$Gray = {$: 'Gray'};
+var $author$project$Main$Single = {$: 'Single'};
+var $author$project$Main$White = {$: 'White'};
+var $author$project$Main$Yellow = {$: 'Yellow'};
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Main$colorToString = function (color) {
+	switch (color.$) {
+		case 'Yellow':
+			return 'bg-yellow';
+		case 'Gray':
+			return 'bg-gray';
+		default:
+			return 'bg-white';
+	}
+};
+var $author$project$Main$sizeToString = function (size) {
+	switch (size.$) {
+		case 'Single':
+			return 'single';
+		case 'Double':
+			return 'double';
+		default:
+			return 'triple';
+	}
+};
+var $author$project$Main$cell = F3(
+	function (size, color, content) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					A2(
+						$elm$core$String$join,
+						' ',
+						_List_fromArray(
+							[
+								'cell',
+								$author$project$Main$sizeToString(size),
+								$author$project$Main$colorToString(color)
+							])))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(content)
+				]));
+	});
+var $author$project$Main$section = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('section')
+		]),
+	_List_fromArray(
+		[
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, '←'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, 'C'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, 'CE'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '÷'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '7'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '8'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '9'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '×'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '4'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '5'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '6'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '-'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '1'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '2'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '3'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '+'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '0'),
+			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '.'),
+			A3($author$project$Main$cell, $author$project$Main$Double, $author$project$Main$Yellow, 'Enter')
+		]));
 var $author$project$Main$view = function (model) {
 	return A2(
-		$elm$html$Html$h1,
+		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
-				$elm$html$Html$text('Hello Elm!')
+				A2(
+				$elm$html$Html$h1,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('h1')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('RPN Calculator')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('calculator')
+					]),
+				_List_fromArray(
+					[
+						$author$project$Main$inputBox(78.9),
+						$author$project$Main$section
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
