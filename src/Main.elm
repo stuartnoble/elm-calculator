@@ -33,6 +33,7 @@ type Msg
     | ClearAll
     | SetDecimal
     | Enter
+    | SetSign
     | InputNumber Float
     | InputOperator Operator
 
@@ -87,6 +88,18 @@ update msg model =
                     { model | error = Just "PARSE ERR" }
                 Just num ->
                     { model | stack = num :: model.stack, currentNum = "0" }
+        SetSign ->
+            -- Make sure that zero can't be negated
+            if model.currentNum == "0" then
+                model
+
+            -- Switch the sign: remove the negative sign if it exists
+            else if String.startsWith "-" model.currentNum then
+                { model | currentNum = String.dropLeft 1 model.currentNum}
+
+            -- or add if it doesn't
+            else 
+                { model | currentNum = "-" ++ model.currentNum }
         InputNumber num ->
             if model.currentNum == "0" then
                 { model | currentNum = String.fromFloat num }
@@ -187,7 +200,8 @@ section =
             cell (onClick <|InputOperator Add) Single Yellow "+",
             cell (onClick <| InputNumber 0) Single White "0",
             cell (onClick <| SetDecimal) Single White ".",
-            cell (onClick <| Enter) Double Yellow "Enter"
+            cell (onClick <| SetSign) Single Yellow "+/-",
+            cell (onClick <| Enter) Single Yellow "Enter"
         ]
 
 view : Model -> Html Msg
