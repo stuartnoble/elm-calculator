@@ -5018,7 +5018,8 @@ var $elm$core$Set$toList = function (_v0) {
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
-var $author$project$Main$initialModel = {currentNum: 0, stack: _List_Nil};
+var $elm$core$Maybe$Nothing = {$: 'Nothing'};
+var $author$project$Main$initialModel = {currentNum: '0', error: $elm$core$Maybe$Nothing, stack: _List_Nil};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -5045,7 +5046,6 @@ var $elm$core$Basics$add = _Basics_add;
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -10556,9 +10556,103 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
+var $elm$core$String$dropRight = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3($elm$core$String$slice, 0, -n, string);
+	});
+var $author$project$Main$operatorFunction = function (operator) {
+	switch (operator.$) {
+		case 'Add':
+			return $elm$core$Basics$add;
+		case 'Subtract':
+			return $elm$core$Basics$sub;
+		case 'Multiply':
+			return $elm$core$Basics$mul;
+		default:
+			return $elm$core$Basics$fdiv;
+	}
+};
+var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		return model;
+		switch (msg.$) {
+			case 'Back':
+				var newNum = A2($elm$core$String$dropRight, 1, model.currentNum);
+				return _Utils_update(
+					model,
+					{
+						currentNum: $elm$core$String$isEmpty(newNum) ? '0' : newNum
+					});
+			case 'Clear':
+				return _Utils_update(
+					model,
+					{currentNum: '0'});
+			case 'ClearAll':
+				return _Utils_update(
+					model,
+					{currentNum: '0', stack: _List_Nil});
+			case 'SetDecimal':
+				return A2($elm$core$String$contains, '.', model.currentNum) ? model : _Utils_update(
+					model,
+					{currentNum: model.currentNum + '.'});
+			case 'Enter':
+				var maybeNumber = $elm$core$String$toFloat(model.currentNum);
+				if (maybeNumber.$ === 'Nothing') {
+					return _Utils_update(
+						model,
+						{
+							error: $elm$core$Maybe$Just('PARSE ERR')
+						});
+				} else {
+					var num = maybeNumber.a;
+					return _Utils_update(
+						model,
+						{
+							currentNum: '0',
+							stack: A2($elm$core$List$cons, num, model.stack)
+						});
+				}
+			case 'InputNumber':
+				var num = msg.a;
+				return (model.currentNum === '0') ? _Utils_update(
+					model,
+					{
+						currentNum: $elm$core$String$fromFloat(num)
+					}) : _Utils_update(
+					model,
+					{
+						currentNum: _Utils_ap(
+							model.currentNum,
+							$elm$core$String$fromFloat(num))
+					});
+			default:
+				var operator = msg.a;
+				var _v2 = model.stack;
+				if (!_v2.b) {
+					return model;
+				} else {
+					var x = _v2.a;
+					var xs = _v2.b;
+					var operation = $author$project$Main$operatorFunction(operator);
+					var maybeNumber = $elm$core$String$toFloat(model.currentNum);
+					if (maybeNumber.$ === 'Nothing') {
+						return _Utils_update(
+							model,
+							{
+								error: $elm$core$Maybe$Just('PARSE ERR')
+							});
+					} else {
+						var num = maybeNumber.a;
+						var newNum = A2(operation, num, x);
+						return _Utils_update(
+							model,
+							{
+								currentNum: $elm$core$String$fromFloat(newNum),
+								stack: xs
+							});
+					}
+				}
+		}
 	});
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$Main$inputBox = function (num) {
@@ -10569,14 +10663,25 @@ var $author$project$Main$inputBox = function (num) {
 				$elm$html$Html$Attributes$class('input-box')
 			]),
 		_List_fromArray(
-			[
-				$elm$html$Html$text(
-				$elm$core$String$fromFloat(num))
-			]));
+			[num]));
 };
+var $author$project$Main$Add = {$: 'Add'};
+var $author$project$Main$Back = {$: 'Back'};
+var $author$project$Main$Clear = {$: 'Clear'};
+var $author$project$Main$Divide = {$: 'Divide'};
 var $author$project$Main$Double = {$: 'Double'};
+var $author$project$Main$Enter = {$: 'Enter'};
 var $author$project$Main$Gray = {$: 'Gray'};
+var $author$project$Main$InputNumber = function (a) {
+	return {$: 'InputNumber', a: a};
+};
+var $author$project$Main$InputOperator = function (a) {
+	return {$: 'InputOperator', a: a};
+};
+var $author$project$Main$Multiply = {$: 'Multiply'};
+var $author$project$Main$SetDecimal = {$: 'SetDecimal'};
 var $author$project$Main$Single = {$: 'Single'};
+var $author$project$Main$Subtract = {$: 'Subtract'};
 var $author$project$Main$White = {$: 'White'};
 var $author$project$Main$Yellow = {$: 'Yellow'};
 var $author$project$Main$colorToString = function (color) {
@@ -10599,8 +10704,8 @@ var $author$project$Main$sizeToString = function (size) {
 			return 'triple';
 	}
 };
-var $author$project$Main$cell = F3(
-	function (size, color, content) {
+var $author$project$Main$cell = F4(
+	function (attr, size, color, content) {
 		return A2(
 			$elm$html$Html$button,
 			_List_fromArray(
@@ -10614,7 +10719,8 @@ var $author$project$Main$cell = F3(
 								'cell',
 								$author$project$Main$sizeToString(size),
 								$author$project$Main$colorToString(color)
-							])))
+							]))),
+					attr
 				]),
 			_List_fromArray(
 				[
@@ -10629,26 +10735,148 @@ var $author$project$Main$section = A2(
 		]),
 	_List_fromArray(
 		[
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, '←'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, 'C'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Gray, 'CE'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '÷'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '7'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '8'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '9'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '×'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '4'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '5'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '6'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '-'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '1'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '2'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '3'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$Yellow, '+'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '0'),
-			A3($author$project$Main$cell, $author$project$Main$Single, $author$project$Main$White, '.'),
-			A3($author$project$Main$cell, $author$project$Main$Double, $author$project$Main$Yellow, 'Enter')
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$Back),
+			$author$project$Main$Single,
+			$author$project$Main$Gray,
+			'←'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$Clear),
+			$author$project$Main$Single,
+			$author$project$Main$Gray,
+			'C'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$Clear),
+			$author$project$Main$Single,
+			$author$project$Main$Gray,
+			'CE'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputOperator($author$project$Main$Divide)),
+			$author$project$Main$Single,
+			$author$project$Main$Yellow,
+			'÷'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(7)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'7'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(8)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'8'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(9)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'9'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputOperator($author$project$Main$Multiply)),
+			$author$project$Main$Single,
+			$author$project$Main$Yellow,
+			'×'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(4)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'4'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(5)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'5'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(6)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'6'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputOperator($author$project$Main$Subtract)),
+			$author$project$Main$Single,
+			$author$project$Main$Yellow,
+			'-'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(1)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'1'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(2)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'2'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(3)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'3'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputOperator($author$project$Main$Add)),
+			$author$project$Main$Single,
+			$author$project$Main$Yellow,
+			'+'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick(
+				$author$project$Main$InputNumber(0)),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'0'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$SetDecimal),
+			$author$project$Main$Single,
+			$author$project$Main$White,
+			'.'),
+			A4(
+			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$Enter),
+			$author$project$Main$Double,
+			$author$project$Main$Yellow,
+			'Enter')
 		]));
+var $author$project$Main$stackBox = function (num) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('input-box')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				$elm$core$String$fromFloat(num))
+			]));
+};
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -10674,11 +10902,31 @@ var $author$project$Main$view = function (model) {
 				_Utils_ap(
 					A2(
 						$elm$core$List$map,
-						$author$project$Main$inputBox,
+						$author$project$Main$stackBox,
 						$elm$core$List$reverse(model.stack)),
 					_List_fromArray(
 						[
-							$author$project$Main$inputBox(model.currentNum),
+							$author$project$Main$inputBox(
+							function () {
+								var _v0 = model.error;
+								if (_v0.$ === 'Nothing') {
+									return $author$project$Main$inputBox(
+										$elm$html$Html$text(model.currentNum));
+								} else {
+									var err = _v0.a;
+									return $author$project$Main$inputBox(
+										A2(
+											$elm$html$Html$span,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('error')
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(err)
+												])));
+								}
+							}()),
 							$author$project$Main$section
 						])))
 			]));
@@ -10686,7 +10934,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
 	{init: $author$project$Main$initialModel, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[]}}}}})}});
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"Back":[],"Clear":[],"ClearAll":[],"SetDecimal":[],"Enter":[],"InputNumber":["Basics.Float"],"InputOperator":["Main.Operator"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Subtract":[],"Multiply":[],"Divide":[]}}}}})}});
 
 //////////////////// HMR BEGIN ////////////////////
 
