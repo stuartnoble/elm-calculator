@@ -1,22 +1,24 @@
--- https://pianomanfrazier.com/post/elm-calculator-book/04-basic-operations/
+-- https://pianomanfrazier.com/post/elm-calculator-book/05-decimals/
 module Main exposing (main, view)
 
 import Browser
-import Html exposing (Html, button, div, h1, text)
+import Html exposing (Html, button, div, h1, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 type alias Model = 
     {
         stack: List Float,
-        currentNum : Float
+        currentNum: String,
+        error: Maybe String
     }
 
 initialModel : Model
 initialModel =
     {
         stack = [],
-        currentNum = 0
+        currentNum = "0",
+        error = Nothing
     }
 
 type Operator
@@ -29,6 +31,7 @@ type Msg
     = Back
     | Clear
     | ClearAll
+    | SetDecimal
     | Enter
     | InputNumber Float
     | InputOperator Operator
@@ -54,16 +57,42 @@ operatorFunction operator =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        Back -> { model | currentNum = model.currentNum / 10 |> floor |> toFloat }
-        Clear -> { model | currentNum = 0 }
-        ClearAll -> { model | currentNum = 0, stack = [] }
+        Back -> 
+            let
+                newNum = String.dropRight 1 model.currentNum
+            in
+                { 
+                    model |
+                        currentNum =
+                            if String.isEmpty newNum then
+                                "0"
+                            else
+                                newNum
+                }
+
+        Clear -> { model | currentNum = "0" }
+        ClearAll -> { model | currentNum = "0", stack = [] }
+        SetDecimal ->
+            if String.contains "." model.currentNum then
+                model
+
+            else
+                { model | currentNum = model.currentNum ++ "." }
         Enter -> 
-            { 
-                model |
-                    stack = model.currentNum :: model.stack,
-                    currentNum = 0
-            }
-        InputNumber num -> { model | currentNum = (model.currentNum * 10) + num }
+            let
+                maybeNumber = String.toFloat model.currentNum 
+            in
+            case maybeNumber of
+                Nothing->
+                    { model | error = Just "PARSE ERR" }
+                Just num ->
+                    { model | stack = num :: model.stack, currentNum = "0" }
+        InputNumber num ->
+            if model.currentNum == "0" then
+                { model | currentNum = String.fromFloat num }
+
+            else
+                { model | currentNum = model.currentNum ++ String.fromFloat num }
         InputOperator operator ->
             case model.stack of
                 -- stack is empty
@@ -76,15 +105,23 @@ update msg model =
                         -- get function to use
                         operation = operatorFunction operator
                         -- calculate
-                        newNum = operation model.currentNum x
+                        maybeNumber =
+                            String.toFloat model.currentNum
                     in
-                        -- update model
-                        {
-                            model |
-                                stack = xs,
-                                currentNum = newNum
-                        }
+                    case maybeNumber of
+                        Nothing ->
+                            { model | error = Just "PARSE ERR" }
 
+                        Just num ->
+                            let
+                                newNum = operation num x
+                            in
+                                -- update model
+                                { 
+                                    model |
+                                        stack = xs,
+                                        currentNum = String.fromFloat newNum
+                                }
 sizeToString : Size -> String
 sizeToString size =
     case size of
@@ -114,36 +151,43 @@ cell attr size color content =
             ]
             [ text content ]
 
-inputBox : Float -> Html Msg
-inputBox num =
+stackBox : Float -> Html Msg
+stackBox num =
     div
         [ class "input-box" ]
         [ text <| String.fromFloat num ]
+
+
+inputBox : Html Msg -> Html Msg
+inputBox num =
+    div
+        [ class "input-box" ]
+        [ num ]
 
 section : Html Msg
 section =
     div
         [ class "section" ]
         [
-            cell (onClick(Back)) Single Gray "←",
-            cell (onClick (Clear)) Single Gray "C",
-            cell (onClick (Clear)) Single Gray "CE",
-            cell (onClick (InputOperator Divide)) Single Yellow "÷",
-            cell (onClick (InputNumber 7)) Single White "7",
-            cell (onClick (InputNumber 8)) Single White "8",
-            cell (onClick (InputNumber 9)) Single White "9",
-            cell (onClick (InputOperator Multiply)) Single Yellow "×",
-            cell (onClick (InputNumber 4)) Single White "4",
-            cell (onClick (InputNumber 5)) Single White "5",
-            cell (onClick (InputNumber 6)) Single White "6",
-            cell (onClick (InputOperator Subtract)) Single Yellow "-",
-            cell (onClick (InputNumber 1)) Single White "1",
-            cell (onClick (InputNumber 2)) Single White "2",
-            cell (onClick (InputNumber 3)) Single White "3",
-            cell (onClick(InputOperator Add)) Single Yellow "+",
-            cell (onClick (InputNumber 0)) Single White "0",
-            --cell Single White ".",
-            cell (onClick (Enter)) Double Yellow "Enter"
+            cell (onClick <|Back) Single Gray "←",
+            cell (onClick <| Clear) Single Gray "C",
+            cell (onClick <| Clear) Single Gray "CE",
+            cell (onClick <| InputOperator Divide) Single Yellow "÷",
+            cell (onClick <| InputNumber 7) Single White "7",
+            cell (onClick <| InputNumber 8) Single White "8",
+            cell (onClick <| InputNumber 9) Single White "9",
+            cell (onClick <| InputOperator Multiply) Single Yellow "×",
+            cell (onClick <| InputNumber 4) Single White "4",
+            cell (onClick <| InputNumber 5) Single White "5",
+            cell (onClick <| InputNumber 6) Single White "6",
+            cell (onClick <| InputOperator Subtract) Single Yellow "-",
+            cell (onClick <| InputNumber 1) Single White "1",
+            cell (onClick <| InputNumber 2) Single White "2",
+            cell (onClick <| InputNumber 3) Single White "3",
+            cell (onClick <|InputOperator Add) Single Yellow "+",
+            cell (onClick <| InputNumber 0) Single White "0",
+            cell (onClick <| SetDecimal) Single White ".",
+            cell (onClick <| Enter) Double Yellow "Enter"
         ]
 
 view : Model -> Html Msg
@@ -156,11 +200,14 @@ view model =
                 [ class "calculator" ]
                 (
                     List.map
-                        inputBox
+                        stackBox
                         (List.reverse model.stack)
                     ++ 
                     [
-                        inputBox model.currentNum,
+                        inputBox <|
+                        case model.error of
+                            Nothing -> inputBox (text model.currentNum)
+                            Just err -> inputBox (span [ class "error" ] [ text err ]),
                         section
                     ]
                 )
