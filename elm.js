@@ -10612,6 +10612,14 @@ var $author$project$Main$update = F2(
 							stack: A2($elm$core$List$cons, num, model.stack)
 						});
 				}
+			case 'SetSign':
+				return (model.currentNum === '0') ? model : (A2($elm$core$String$startsWith, '-', model.currentNum) ? _Utils_update(
+					model,
+					{
+						currentNum: A2($elm$core$String$dropLeft, 1, model.currentNum)
+					}) : _Utils_update(
+					model,
+					{currentNum: '-' + model.currentNum}));
 			case 'InputNumber':
 				var num = msg.a;
 				return (model.currentNum === '0') ? _Utils_update(
@@ -10669,7 +10677,6 @@ var $author$project$Main$Add = {$: 'Add'};
 var $author$project$Main$Back = {$: 'Back'};
 var $author$project$Main$Clear = {$: 'Clear'};
 var $author$project$Main$Divide = {$: 'Divide'};
-var $author$project$Main$Double = {$: 'Double'};
 var $author$project$Main$Enter = {$: 'Enter'};
 var $author$project$Main$Gray = {$: 'Gray'};
 var $author$project$Main$InputNumber = function (a) {
@@ -10680,6 +10687,7 @@ var $author$project$Main$InputOperator = function (a) {
 };
 var $author$project$Main$Multiply = {$: 'Multiply'};
 var $author$project$Main$SetDecimal = {$: 'SetDecimal'};
+var $author$project$Main$SetSign = {$: 'SetSign'};
 var $author$project$Main$Single = {$: 'Single'};
 var $author$project$Main$Subtract = {$: 'Subtract'};
 var $author$project$Main$White = {$: 'White'};
@@ -10859,8 +10867,14 @@ var $author$project$Main$section = A2(
 			'.'),
 			A4(
 			$author$project$Main$cell,
+			$elm$html$Html$Events$onClick($author$project$Main$SetSign),
+			$author$project$Main$Single,
+			$author$project$Main$Yellow,
+			'+/-'),
+			A4(
+			$author$project$Main$cell,
 			$elm$html$Html$Events$onClick($author$project$Main$Enter),
-			$author$project$Main$Double,
+			$author$project$Main$Single,
 			$author$project$Main$Yellow,
 			'Enter')
 		]));
@@ -10934,7 +10948,7 @@ var $author$project$Main$view = function (model) {
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
 	{init: $author$project$Main$initialModel, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"Back":[],"Clear":[],"ClearAll":[],"SetDecimal":[],"Enter":[],"InputNumber":["Basics.Float"],"InputOperator":["Main.Operator"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Subtract":[],"Multiply":[],"Divide":[]}}}}})}});
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{},"unions":{"Main.Msg":{"args":[],"tags":{"Back":[],"Clear":[],"ClearAll":[],"SetDecimal":[],"Enter":[],"SetSign":[],"InputNumber":["Basics.Float"],"InputOperator":["Main.Operator"]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Main.Operator":{"args":[],"tags":{"Add":[],"Subtract":[],"Multiply":[],"Divide":[]}}}}})}});
 
 //////////////////// HMR BEGIN ////////////////////
 
